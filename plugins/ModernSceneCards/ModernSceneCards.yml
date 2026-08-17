@@ -1,6 +1,6 @@
 name: Modern Scene Cards
-description: Orange/dark-grey modern cards. Studio top-right; resolution, codec & time bottom-right. Hover performer names for up to 3 other scenes. Pure CSS + MutationObserver.
-version: 0.4.0
+description: Orange/dark-grey modern cards. Studio top-right; clean resolution, codec & time chips bottom-right. Hover performer for up to 3 other scenes.
+version: 0.4.1
 url: https://github.com/datamori-io/stash-plugins
 
 ui:

@@ -1,8 +1,7 @@
 /**
- * Auto Quality Tags v0.2.0
- * - Pages through the entire scene library
- * - Applies resolution + codec tags from primary file metadata
- * - Optional replaceOutdated: removes old quality tags that no longer match
+ * Auto Quality Tags v0.2.1
+ * - Pages through entire library
+ * - Additive or replace-outdated mode via task args
  */
 
 (function () {
@@ -10,7 +9,6 @@
     console.log("[AutoQualityTags] " + msg);
   }
 
-  // Canonical quality tag names we manage
   const RES_TAGS = ["4K", "1440p", "1080p", "720p", "480p"];
   const CODEC_TAGS = ["HEVC", "H.264", "AV1", "VP9", "VP8"];
   const ALL_QUALITY = RES_TAGS.concat(CODEC_TAGS);
@@ -72,15 +70,13 @@
       "  findScenes(filter: $filter) {" +
       "    count" +
       "    scenes {" +
-      "      id" +
-      "      title" +
+      "      id title" +
       "      tags { id name }" +
       "      files { width height video_codec }" +
       "    }" +
       "  }" +
       "}";
 
-    // First page to get total count
     let page = 1;
     let totalCount = null;
     let examined = 0;
@@ -143,7 +139,6 @@
         existingByLower[t.name.toLowerCase()] = t;
       });
 
-      // Tags we want present
       const desiredIds = [];
       let needsChange = false;
 
@@ -160,10 +155,8 @@
         }
       });
 
-      // Build final tag id list
       let finalIds;
       if (replaceOutdated) {
-        // Keep non-quality tags + desired quality tags only
         finalIds = existingTags
           .filter(function (t) {
             return !isQualityTagName(t.name);
@@ -173,7 +166,6 @@
           })
           .concat(desiredIds);
 
-        // Detect if quality set changed
         const oldQualityIds = existingTags
           .filter(function (t) {
             return isQualityTagName(t.name);
@@ -186,7 +178,6 @@
         const newQualityIds = desiredIds.slice().sort().join(",");
         if (oldQualityIds !== newQualityIds) needsChange = true;
       } else {
-        // Additive only
         const currentIds = existingTags.map(function (t) {
           return t.id;
         });
@@ -205,7 +196,7 @@
         log(
           "[dry-run] Scene " +
             scene.id +
-            " → " +
+            " \u2192 " +
             desiredNames.join(", ") +
             (replaceOutdated ? " (replace)" : "")
         );
@@ -213,7 +204,6 @@
         return;
       }
 
-      // Dedupe ids
       const seen = {};
       const uniqueIds = [];
       finalIds.forEach(function (id) {
@@ -234,11 +224,10 @@
       if (updateRes && updateRes.sceneUpdate) {
         tagged++;
         updated++;
-        log("Tagged scene " + scene.id + " → " + desiredNames.join(", "));
+        log("Tagged scene " + scene.id + " \u2192 " + desiredNames.join(", "));
       }
     }
 
-    // Paginate until we've covered totalCount
     while (true) {
       const variables = {
         filter: {
@@ -287,8 +276,6 @@
       if (examined >= totalCount) break;
       if (scenes.length < pageSize) break;
       page++;
-
-      // Safety cap: 10k pages
       if (page > 10000) {
         log("Safety stop at page limit");
         break;

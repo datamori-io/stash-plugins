@@ -1,9 +1,8 @@
 /**
- * Modern Scene Cards v0.4.0
- * - MutationObserver only (no React patch)
- * - Bottom-right meta chips (res / codec / time) from DOM + tags
- * - Performer hover: up to 3 other scenes via GraphQL
- * - Orange / dark-grey theme via CSS
+ * Modern Scene Cards v0.4.1
+ * - Strict chip parsing (no jumbled duration/rating text)
+ * - Hide native overlays when our chips are present
+ * - Performer hover: up to 3 other scenes
  */
 (function () {
   "use strict";
@@ -29,39 +28,62 @@
     }
   }
 
-  // ---------- bottom-right chips from existing DOM / tags ----------
   function textOf(el) {
     return (el && el.textContent ? el.textContent : "").trim();
   }
 
-  function findResFromCard(card) {
-    const specs = qs(card, ".scene-specs-overlay, .overlay-resolution");
-    const t = textOf(specs);
-    if (t && /\d|4K|UHD|HD/i.test(t)) return t.split(/\s+/)[0];
+  // Only accept clean resolution tokens
+  function parseRes(text) {
+    if (!text) return null;
+    const m = String(text).match(/\b(4K|UHD|2160p|1440p|1080p|720p|480p)\b/i);
+    if (!m) return null;
+    const t = m[1].toUpperCase();
+    if (t === "UHD" || t === "2160P") return "4K";
+    return t.replace("P", "p");
+  }
 
-    // tags
+  // Only accept clean duration like 1:23:45 or 12:34
+  function parseTime(text) {
+    if (!text) return null;
+    const m = String(text).match(/\b(\d{1,2}:\d{2}(?::\d{2})?)\b/);
+    return m ? m[1] : null;
+  }
+
+  function parseCodec(text) {
+    if (!text) return null;
+    const m = String(text).match(/\b(HEVC|H\.?265|H\.?264|AVC|AV1|VP9|VP8|x265|x264)\b/i);
+    if (!m) return null;
+    const c = m[1].toUpperCase().replace(".", "");
+    if (c === "H265" || c === "X265") return "HEVC";
+    if (c === "H264" || c === "X264" || c === "AVC") return "H.264";
+    return c;
+  }
+
+  function findResFromCard(card) {
+    // Prefer quality tags first (clean)
     for (const a of qsa(card, "a.tag-item, .tag-item")) {
-      const n = textOf(a);
-      if (/^(4K|2160p|1440p|1080p|720p|480p)$/i.test(n)) return n.toUpperCase();
+      const r = parseRes(textOf(a));
+      if (r) return r;
     }
-    return null;
+    // Then native specs overlay — but only the res token
+    const specs = qs(card, ".scene-specs-overlay, .overlay-resolution");
+    return parseRes(textOf(specs));
   }
 
   function findCodecFromCard(card) {
     for (const a of qsa(card, "a.tag-item, .tag-item")) {
-      const n = textOf(a);
-      if (/^(HEVC|H\.?264|H\.?265|AV1|VP9|x265|x264)$/i.test(n)) {
-        return n.toUpperCase().replace("H264", "H.264").replace("H265", "HEVC");
-      }
+      const c = parseCodec(textOf(a));
+      if (c) return c;
     }
     return null;
   }
 
   function findTimeFromCard(card) {
-    const dur = qs(card, ".overlay-duration, .scene-card-preview .duration");
-    const t = textOf(dur);
-    if (t && /\d/.test(t)) return t;
-    return null;
+    const dur = qs(
+      card,
+      ".overlay-duration, .scene-card-preview .duration, .scene-specs-overlay"
+    );
+    return parseTime(textOf(dur));
   }
 
   function ensureBottomMeta(card) {
@@ -71,11 +93,17 @@
       card;
     if (!preview) return;
 
+    const res = findResFromCard(card);
+    const codec = findCodecFromCard(card);
+    const time = findTimeFromCard(card);
+
+    // Nothing clean to show — leave native overlays alone
+    if (!res && !codec && !time) return;
+
     let row = qs(card, ".msc-bottom-meta");
     if (!row) {
       row = document.createElement("div");
       row.className = "msc-bottom-meta";
-      // attach inside preview for absolute positioning
       const style = window.getComputedStyle(preview);
       if (style.position === "static") {
         preview.style.position = "relative";
@@ -83,15 +111,12 @@
       preview.appendChild(row);
     }
 
-    const res = findResFromCard(card);
-    const codec = findCodecFromCard(card);
-    const time = findTimeFromCard(card);
-
     row.innerHTML = "";
-    if (res) {
+    // Order: time | codec | res  (row-reverse in CSS puts res furthest right)
+    if (time) {
       const c = document.createElement("span");
-      c.className = "msc-chip msc-chip--res";
-      c.textContent = res;
+      c.className = "msc-chip msc-chip--time";
+      c.textContent = time;
       row.appendChild(c);
     }
     if (codec) {
@@ -100,16 +125,22 @@
       c.textContent = codec;
       row.appendChild(c);
     }
-    if (time) {
+    if (res) {
       const c = document.createElement("span");
-      c.className = "msc-chip msc-chip--time";
-      c.textContent = time;
+      c.className = "msc-chip msc-chip--res";
+      c.textContent = res;
       row.appendChild(c);
     }
 
-    if (row.children.length) {
-      card.classList.add("msc-has-bottom-meta");
-    }
+    card.classList.add("msc-has-bottom-meta");
+
+    // Hide native overlays so they don't double / jumble
+    qsa(
+      card,
+      ".scene-specs-overlay, .overlay-resolution, .overlay-duration, .scene-card-preview .duration"
+    ).forEach(function (el) {
+      el.style.display = "none";
+    });
   }
 
   function enhanceCard(card) {
@@ -135,7 +166,6 @@
     }
   }
 
-  // ---------- GraphQL helper ----------
   async function gql(query, variables) {
     const res = await fetch("/graphql", {
       method: "POST",
@@ -213,7 +243,7 @@
       (title || "More scenes") +
       "</div>";
     if (loading) {
-      html += '<div class="msc-performer-popup__loading">Loading…</div>';
+      html += '<div class="msc-performer-popup__loading">Loading\u2026</div>';
     } else if (!scenes || !scenes.length) {
       html +=
         '<div class="msc-performer-popup__empty">No other scenes found</div>';
@@ -265,7 +295,6 @@
     renderPopup(name, null, true);
     try {
       const scenes = await fetchPerformerScenes(id, exclude, 3);
-      // still hovering-ish
       positionPopup(link);
       renderPopup(name, scenes, false);
     } catch (e) {
@@ -287,7 +316,6 @@
     );
   }
 
-  // ---------- boot ----------
   document.documentElement.classList.add("msc-loaded");
 
   function fullScan(root) {
@@ -316,5 +344,5 @@
 
   observer.observe(document.body, { childList: true, subtree: true });
 
-  console.log("[ModernSceneCards] v0.4.0 loaded");
+  console.log("[ModernSceneCards] v0.4.1 loaded");
 })();
