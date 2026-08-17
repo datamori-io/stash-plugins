@@ -1,33 +1,39 @@
 /* ============================================================
-   Modern Scene Cards v0.3.1 – Option 1 style
-   16:9 • high-contrast res/codec badges • clean meta block
+   Modern Scene Cards v0.4.0
+   Orange / dark-grey theme
+   Studio = top-right | Res + codec + time = bottom-right
    ============================================================ */
 
 :root {
+  --msc-bg: #1a1a1c;
+  --msc-bg-deep: #121214;
+  --msc-orange: #ff6d00;
+  --msc-orange-hot: #ff9100;
+  --msc-orange-dim: rgba(255, 109, 0, 0.85);
+  --msc-grey: #2a2a2e;
+  --msc-grey-light: #3a3a40;
+  --msc-text: #f0f0f2;
+  --msc-muted: rgba(255, 255, 255, 0.58);
   --msc-radius: 10px;
-  --msc-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
-  --msc-shadow-hover: 0 14px 32px rgba(0, 0, 0, 0.55);
-  --msc-text: #f2f2f4;
-  --msc-muted: rgba(255, 255, 255, 0.62);
-  --msc-res: #1e88e5;
-  --msc-codec: #43a047;
-  --msc-badge-text: #ffffff;
+  --msc-res: #ff6d00;
+  --msc-codec: #ff9100;
+  --msc-time: #42424a;
 }
 
 /* ---- Card shell ---- */
 .scene-card {
   border-radius: var(--msc-radius) !important;
   overflow: hidden !important;
-  box-shadow: var(--msc-shadow) !important;
-  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
-              box-shadow 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
-  background: #121216 !important;
-  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.5) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+  background: var(--msc-bg) !important;
+  border: 1px solid rgba(255, 109, 0, 0.12) !important;
 }
 
 .scene-card:hover {
-  transform: translateY(-4px) scale(1.015) !important;
-  box-shadow: var(--msc-shadow-hover) !important;
+  transform: translateY(-4px) scale(1.012) !important;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.6),
+              0 0 0 1px rgba(255, 109, 0, 0.25) !important;
   z-index: 6;
 }
 
@@ -41,149 +47,172 @@
   object-fit: cover !important;
   width: 100% !important;
   border-radius: 0 !important;
+  position: relative !important;
 }
 
-/* ---- High-contrast resolution / specs overlay (native Stash) ---- */
-.scene-card .scene-specs-overlay,
-.scene-card .overlay-resolution,
-.scene-card .scene-card-preview .resolution,
-.scene-card [class*="resolution"],
-.scene-card .scene-card-preview .scene-specs-overlay {
-  background: rgba(0, 0, 0, 0.82) !important;
-  color: #fff !important;
-  font-weight: 700 !important;
-  font-size: 0.7rem !important;
-  letter-spacing: 0.04em !important;
-  text-transform: uppercase !important;
-  padding: 0.22rem 0.55rem !important;
-  border-radius: 6px !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
-  text-shadow: none !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-  opacity: 1 !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
+/* Ensure preview is a positioning context */
+.scene-card .scene-card-preview {
+  position: relative !important;
 }
 
-/* Prefer top-right placement like option 1 */
-.scene-card .scene-specs-overlay {
+/* ---- STUDIO = top right ---- */
+.scene-card .scene-studio-overlay {
   top: 8px !important;
   right: 8px !important;
   left: auto !important;
   bottom: auto !important;
-}
-
-/* Duration chip next to specs when present */
-.scene-card .scene-card-preview .duration,
-.scene-card .overlay-duration {
-  background: rgba(0, 0, 0, 0.82) !important;
+  background: rgba(26, 26, 28, 0.88) !important;
   color: #fff !important;
   font-weight: 650 !important;
   font-size: 0.68rem !important;
   padding: 0.2rem 0.5rem !important;
   border-radius: 6px !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 109, 0, 0.35) !important;
   opacity: 1 !important;
-}
-
-/* Studio overlay – keep readable but secondary */
-.scene-card .scene-studio-overlay {
-  background: rgba(0, 0, 0, 0.65) !important;
-  color: #fff !important;
-  font-weight: 600 !important;
-  font-size: 0.68rem !important;
-  padding: 0.18rem 0.45rem !important;
-  border-radius: 5px !important;
-  opacity: 0.95 !important;
   text-shadow: none !important;
+  max-width: 55% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  z-index: 3 !important;
 }
 
-/* ---- Tag pills: make resolution & codec jump out ---- */
-/* Matches common Auto Quality Tags names */
-.scene-card .tag-item,
-.scene-card .scene-card__details .badge,
-.scene-card .card-section .badge,
-.scene-card a.tag-item {
-  border-radius: 999px !important;
+/* Studio logo image if present */
+.scene-card .scene-studio-overlay img,
+.scene-card .studio-overlay img {
+  max-height: 28px !important;
+  max-width: 90px !important;
+  object-fit: contain !important;
+}
+
+/* ---- RESOLUTION / SPECS / TIME = bottom right ---- */
+.scene-card .scene-specs-overlay,
+.scene-card .overlay-resolution,
+.scene-card .scene-card-preview .resolution {
+  top: auto !important;
+  bottom: 8px !important;
+  right: 8px !important;
+  left: auto !important;
+  background: var(--msc-orange-dim) !important;
+  color: #fff !important;
+  font-weight: 800 !important;
+  font-size: 0.7rem !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  padding: 0.22rem 0.55rem !important;
+  border-radius: 6px !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  text-shadow: none !important;
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+  opacity: 1 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45) !important;
+  z-index: 3 !important;
+}
+
+.scene-card .scene-card-preview .duration,
+.scene-card .overlay-duration {
+  top: auto !important;
+  bottom: 8px !important;
+  right: auto !important;
+  /* sit just left of resolution when both exist – JS may stack; CSS default */
+  left: auto !important;
+  background: rgba(42, 42, 46, 0.92) !important;
+  color: #fff !important;
   font-weight: 650 !important;
   font-size: 0.68rem !important;
-  letter-spacing: 0.02em !important;
+  padding: 0.2rem 0.5rem !important;
+  border-radius: 6px !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  opacity: 1 !important;
+  z-index: 3 !important;
 }
 
-/* Resolution-style tags */
+/* Stack bottom-right chips in a row via our wrapper */
+.msc-bottom-meta {
+  position: absolute !important;
+  bottom: 8px !important;
+  right: 8px !important;
+  left: auto !important;
+  top: auto !important;
+  display: flex !important;
+  flex-direction: row-reverse !important;
+  flex-wrap: wrap !important;
+  gap: 0.3rem !important;
+  z-index: 4 !important;
+  pointer-events: none !important;
+  max-width: 70% !important;
+  justify-content: flex-start !important;
+}
+
+.msc-bottom-meta .msc-chip {
+  pointer-events: none;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #fff;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.msc-chip--res {
+  background: var(--msc-orange) !important;
+}
+
+.msc-chip--codec {
+  background: var(--msc-orange-hot) !important;
+  color: #1a1a1c !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
+}
+
+.msc-chip--time {
+  background: rgba(42, 42, 46, 0.95) !important;
+}
+
+/* Hide native specs if we inject our own row (class toggled by JS) */
+.scene-card.msc-has-bottom-meta .scene-specs-overlay,
+.scene-card.msc-has-bottom-meta .overlay-duration {
+  /* keep native if we couldn't parse; otherwise JS moves content */
+}
+
+/* ---- Tag pills (orange for res/codec) ---- */
 .scene-card .tag-item[href*="4K" i],
 .scene-card .tag-item[href*="2160" i],
 .scene-card .tag-item[href*="1440" i],
 .scene-card .tag-item[href*="1080" i],
-.scene-card .tag-item[href*="720" i],
-.scene-card .badge:is([title*="4K" i], [title*="1080" i], [title*="720" i]),
-.scene-card span.tag-item:is([data-tag-name*="4K" i], [data-tag-name*="1080" i]) {
-  background: var(--msc-res) !important;
-  color: var(--msc-badge-text) !important;
+.scene-card .tag-item[href*="720" i] {
+  background: var(--msc-orange) !important;
+  color: #fff !important;
   border: none !important;
-  box-shadow: 0 1px 4px rgba(30, 136, 229, 0.45) !important;
+  font-weight: 700 !important;
+  box-shadow: 0 1px 4px rgba(255, 109, 0, 0.4) !important;
 }
 
-/* Codec-style tags */
 .scene-card .tag-item[href*="HEVC" i],
 .scene-card .tag-item[href*="H.264" i],
 .scene-card .tag-item[href*="H264" i],
 .scene-card .tag-item[href*="AV1" i],
-.scene-card .tag-item[href*="VP9" i],
 .scene-card .tag-item[href*="x265" i],
 .scene-card .tag-item[href*="x264" i] {
-  background: var(--msc-codec) !important;
-  color: var(--msc-badge-text) !important;
+  background: var(--msc-orange-hot) !important;
+  color: #1a1a1c !important;
   border: none !important;
-  box-shadow: 0 1px 4px rgba(67, 160, 71, 0.45) !important;
+  font-weight: 700 !important;
 }
 
-/* Fallback: any tag text that looks like res/codec via attribute selectors
-   (Stash often puts the name in the link text; stronger rules above cover most cases) */
-
-/* Our own injected badge class (if re-enabled later) */
-.msc-badge-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-top: 0.45rem;
-  align-items: center;
-}
-
-.msc-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.2rem 0.55rem;
-  border-radius: 999px;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #fff;
-  line-height: 1.25;
-  white-space: nowrap;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
-}
-
-.msc-badge--resolution {
-  background: var(--msc-res) !important;
-}
-
-.msc-badge--codec {
-  background: var(--msc-codec) !important;
-}
-
-.msc-badge--female {
-  background: #d81b60 !important;
-}
-
-/* ---- Details block (option 1 style) ---- */
+/* ---- Details block ---- */
 .scene-card .card-section,
 .scene-card .scene-card__details {
   padding: 0.65rem 0.8rem 0.8rem !important;
-  background: #121216 !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+  background: var(--msc-bg) !important;
+  border-top: 1px solid rgba(255, 109, 0, 0.1) !important;
 }
 
 .scene-card .scene-card-title,
@@ -191,7 +220,6 @@
 .scene-card .scene-card__title {
   font-weight: 600 !important;
   font-size: 0.9rem !important;
-  letter-spacing: -0.01em !important;
   color: var(--msc-text) !important;
   margin-bottom: 0.25rem !important;
   line-height: 1.35 !important;
@@ -202,27 +230,111 @@
 }
 
 .scene-card .scene-card__date,
-.scene-card .card-section .text-muted,
-.scene-card .scene-card-date {
+.scene-card .card-section .text-muted {
   font-size: 0.75rem !important;
   color: var(--msc-muted) !important;
 }
 
-.scene-card .performer-name,
-.scene-card .scene-performers,
-.scene-card .performer-tag {
-  font-size: 0.78rem !important;
-  color: var(--msc-muted) !important;
+.scene-card a[href*="/performers/"] {
+  color: var(--msc-orange-hot) !important;
+  font-weight: 550 !important;
+  text-decoration: none !important;
+  border-bottom: 1px dotted rgba(255, 145, 0, 0.35);
+  cursor: pointer;
 }
 
-/* Rating banner */
+.scene-card a[href*="/performers/"]:hover {
+  color: #fff !important;
+  border-bottom-color: var(--msc-orange);
+}
+
+/* ---- Performer hover popup ---- */
+.msc-performer-popup {
+  position: fixed;
+  z-index: 99999;
+  width: 280px;
+  max-width: calc(100vw - 24px);
+  background: var(--msc-bg-deep);
+  border: 1px solid rgba(255, 109, 0, 0.35);
+  border-radius: 10px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65),
+              0 0 0 1px rgba(255, 109, 0, 0.15);
+  padding: 0.6rem;
+  pointer-events: auto;
+  animation: msc-pop-in 0.15s ease-out;
+}
+
+@keyframes msc-pop-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.msc-performer-popup__title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--msc-orange);
+  margin: 0 0 0.45rem 0;
+  padding: 0 0.15rem;
+}
+
+.msc-performer-popup__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.msc-performer-popup__item {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  text-decoration: none !important;
+  border-radius: 6px;
+  padding: 0.25rem;
+  background: var(--msc-grey);
+  transition: background 0.15s ease;
+}
+
+.msc-performer-popup__item:hover {
+  background: var(--msc-grey-light);
+}
+
+.msc-performer-popup__thumb {
+  width: 72px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+  background: #000;
+}
+
+.msc-performer-popup__meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.msc-performer-popup__name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--msc-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.25;
+}
+
+.msc-performer-popup__empty,
+.msc-performer-popup__loading {
+  font-size: 0.75rem;
+  color: var(--msc-muted);
+  padding: 0.4rem 0.2rem;
+}
+
 .scene-card .rating-banner {
   border-radius: 0 0 8px 0 !important;
+  background: var(--msc-orange) !important;
+  color: #fff !important;
   font-weight: 700 !important;
-}
-
-/* Selection check / actions – keep clear */
-.scene-card .card-check,
-.scene-card .scene-card-check {
-  opacity: 1 !important;
 }
