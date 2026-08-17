@@ -1,6 +1,6 @@
 name: Auto Quality Tags
-description: Automatically creates and applies resolution (4K, 1080p...) and codec (HEVC, H.264, AV1...) tags to scenes based on file metadata. Perfect for keeping a high-quality library organised.
-version: 0.1.0
+description: Scans the full library and applies resolution (4K, 1080p...) and codec (HEVC, H.264, AV1...) tags from file metadata. Can optionally replace outdated quality tags.
+version: 0.2.0
 url: https://github.com/datamori-io/stash-plugins
 
 exec:
@@ -9,15 +9,14 @@ interface: js
 
 tasks:
   - name: Apply Resolution & Codec Tags
-    description: Scans scenes and applies / creates tags for resolution and video codec from the primary file.
+    description: Pages through all scenes and applies resolution + codec tags. Set replaceOutdated to true to remove old quality tags that no longer match the file.
     defaultArgs:
       createMissing: "true"
       dryRun: "false"
+      replaceOutdated: "false"
+      pageSize: "100"
 
 settings:
   createMissingTags:
     displayName: Create tags if they do not exist
     type: BOOLEAN
-  tagPrefix:
-    displayName: Optional prefix for tags (e.g. "res:" or leave empty)
-    type: STRING
