@@ -1,11 +1,7 @@
 /**
- * Modern Scene Cards v0.2
- * - Better React patching via PluginApi
- * - Accurate female-only filtering using full scene data
- * - Resolution + Codec badges
- * - Settings-aware defaults
+ * Modern Scene Cards v0.2.1
+ * Hardened: safe on Front Page, guards against missing scene data
  */
-
 (function () {
   "use strict";
 
@@ -34,7 +30,7 @@
     if (h >= 1080) return "1080p";
     if (h >= 720) return "720p";
     if (h >= 480) return "480p";
-    return `${h}p`;
+    return null;
   }
 
   function formatCodec(raw) {
@@ -45,126 +41,141 @@
     if (c.includes("h264") || c.includes("avc") || c.includes("h.264")) return "H.264";
     if (c.includes("vp9")) return "VP9";
     if (c.includes("vp8")) return "VP8";
-    return String(raw).toUpperCase().slice(0, 8);
+    return null;
   }
 
   function isFemale(p) {
-    if (!p) return false;
-    const g = (p.gender || "").toUpperCase();
+    if (!p || typeof p !== "object") return false;
+    const g = String(p.gender || "").toUpperCase();
     return g === "FEMALE" || g === "TRANSGENDER_FEMALE";
   }
 
   function getPrimaryFile(scene) {
-    if (!scene || !scene.files || scene.files.length === 0) return null;
+    if (!scene || !Array.isArray(scene.files) || scene.files.length === 0) return null;
     return scene.files[0];
   }
 
   function enhanceCard(cardEl, scene) {
-    if (!cardEl || !scene || cardEl.dataset.mscEnhanced === "1") return;
-    cardEl.dataset.mscEnhanced = "1";
+    try {
+      if (!cardEl || !scene || !scene.id) return;
+      if (cardEl.dataset.mscEnhanced === "1") return;
+      cardEl.dataset.mscEnhanced = "1";
 
-    const settings = getSettings();
-    const details =
-      cardEl.querySelector(".scene-card__details") ||
-      cardEl.querySelector(".card-section");
+      const settings = getSettings();
+      const details =
+        cardEl.querySelector(".scene-card__details") ||
+        cardEl.querySelector(".card-section");
+      if (!details) return;
 
-    if (!details) return;
+      const old = details.querySelector(".msc-badge-row");
+      if (old) old.remove();
 
-    const old = details.querySelector(".msc-badge-row");
-    if (old) old.remove();
+      const row = document.createElement("div");
+      row.className = "msc-badge-row";
 
-    const row = document.createElement("div");
-    row.className = "msc-badge-row";
+      const file = getPrimaryFile(scene);
 
-    const file = getPrimaryFile(scene);
-
-    if (settings.showResolution && file) {
-      const res = formatResolution(file.width, file.height);
-      if (res) {
-        const b = document.createElement("span");
-        b.className = "msc-badge msc-badge--resolution";
-        b.textContent = res;
-        row.appendChild(b);
-      }
-    }
-
-    if (settings.showCodec && file) {
-      const codec = formatCodec(file.video_codec || file.codec);
-      if (codec) {
-        const b = document.createElement("span");
-        b.className = "msc-badge msc-badge--codec";
-        b.textContent = codec;
-        row.appendChild(b);
-      }
-    }
-
-    if (settings.showFemaleCountBadge && scene.performers) {
-      const females = scene.performers.filter(isFemale);
-      if (females.length > 0) {
-        const b = document.createElement("span");
-        b.className = "msc-badge msc-badge--female";
-        if (females.length === 1) {
-          b.textContent = females[0].name.split(/\s+/)[0];
-        } else {
-          b.textContent = `${females.length}\u2640`;
+      if (settings.showResolution && file) {
+        const res = formatResolution(file.width, file.height);
+        if (res) {
+          const b = document.createElement("span");
+          b.className = "msc-badge msc-badge--resolution";
+          b.textContent = res;
+          row.appendChild(b);
         }
-        row.appendChild(b);
       }
-    }
 
-    if (row.children.length) {
-      details.appendChild(row);
-    }
-
-    if (settings.showOnlyFemale && scene.performers) {
-      const femaleIds = new Set(
-        scene.performers.filter(isFemale).map((p) => String(p.id))
-      );
-
-      const performerNodes = cardEl.querySelectorAll(
-        "a[href*='/performers/'], .performer-name, .performer-tag, [data-performer-id]"
-      );
-
-      performerNodes.forEach((node) => {
-        let id = node.getAttribute("data-performer-id");
-        if (!id && node.href) {
-          const m = node.href.match(/\/performers\/(\d+)/);
-          if (m) id = m[1];
+      if (settings.showCodec && file) {
+        const codec = formatCodec(file.video_codec || file.codec);
+        if (codec) {
+          const b = document.createElement("span");
+          b.className = "msc-badge msc-badge--codec";
+          b.textContent = codec;
+          row.appendChild(b);
         }
-        if (id && !femaleIds.has(String(id))) {
-          const parent = node.closest(".performer-tag, .tag-item, span") || node;
-          parent.style.display = "none";
-        } else if (id) {
-          node.classList.add("msc-keep");
+      }
+
+      if (settings.showFemaleCountBadge && Array.isArray(scene.performers)) {
+        const females = scene.performers.filter(isFemale);
+        if (females.length > 0) {
+          const b = document.createElement("span");
+          b.className = "msc-badge msc-badge--female";
+          if (females.length === 1 && females[0].name) {
+            b.textContent = String(females[0].name).split(/\s+/)[0];
+          } else {
+            b.textContent = females.length + "\u2640";
+          }
+          row.appendChild(b);
         }
-      });
+      }
+
+      if (row.children.length) {
+        details.appendChild(row);
+      }
+
+      if (settings.showOnlyFemale && Array.isArray(scene.performers)) {
+        const femaleIds = new Set(
+          scene.performers.filter(isFemale).map((p) => String(p.id))
+        );
+
+        cardEl
+          .querySelectorAll(
+            "a[href*='/performers/'], .performer-name, .performer-tag, [data-performer-id]"
+          )
+          .forEach((node) => {
+            let id = node.getAttribute("data-performer-id");
+            if (!id && node.href) {
+              const m = String(node.href).match(/\/performers\/(\d+)/);
+              if (m) id = m[1];
+            }
+            if (id && !femaleIds.has(String(id))) {
+              const parent =
+                node.closest(".performer-tag, .tag-item, span") || node;
+              parent.style.display = "none";
+            }
+          });
+      }
+    } catch (err) {
+      console.warn("[ModernSceneCards] enhanceCard error:", err);
     }
   }
 
   try {
     PluginApi.patch.after("SceneCard", function (props, result) {
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          const links = document.querySelectorAll(
-            `.scene-card a[href*="/scenes/${props.scene.id}"]`
-          );
-          links.forEach((link) => {
-            const card = link.closest(".scene-card");
-            if (card) enhanceCard(card, props.scene);
+      try {
+        if (
+          props &&
+          props.scene &&
+          typeof props.scene === "object" &&
+          props.scene.id != null
+        ) {
+          const sceneId = props.scene.id;
+          requestAnimationFrame(function () {
+            setTimeout(function () {
+              try {
+                const links = document.querySelectorAll(
+                  '.scene-card a[href*="/scenes/' + sceneId + '"]'
+                );
+                links.forEach(function (link) {
+                  const card = link.closest(".scene-card");
+                  if (card) enhanceCard(card, props.scene);
+                });
+              } catch (e) {
+                console.warn("[ModernSceneCards] deferred enhance failed:", e);
+              }
+            }, 40);
           });
-        }, 30);
-      });
+        }
+      } catch (e) {
+        console.warn("[ModernSceneCards] patch handler error:", e);
+      }
       return result;
     });
-    console.log("[ModernSceneCards] SceneCard patch registered");
+    console.log("[ModernSceneCards] SceneCard patch registered (v0.2.1 safe)");
   } catch (err) {
     console.warn("[ModernSceneCards] patch.after failed:", err);
   }
 
   document.documentElement.classList.add("msc-loaded");
-  if (getSettings().showOnlyFemale) {
-    document.documentElement.classList.add("msc-female-only");
-  }
-
-  console.log("[ModernSceneCards] v0.2 loaded");
+  console.log("[ModernSceneCards] v0.2.1 loaded");
 })();
