@@ -1,0 +1,26 @@
+/* Simple visual hints for library quality */
+
+.scene-card.lh-missing-cover {
+  outline: 2px solid #ff9800;
+  outline-offset: -2px;
+}
+
+.scene-card.lh-missing-date {
+  position: relative;
+}
+
+.scene-card.lh-missing-date::after {
+  content: "no date";
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: rgba(255, 152, 0, 0.9);
+  color: #000;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  z-index: 5;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}

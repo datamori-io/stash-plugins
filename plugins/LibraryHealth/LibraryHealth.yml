@@ -1,0 +1,15 @@
+name: Library Health
+description: Simple starter plugin that helps keep a high-quality library clean. Includes a basic health-check task and light UI indicators.
+version: 0.1.0
+url: https://github.com/datamori-io/stash-plugins
+
+ui:
+  css:
+    - library-health.css
+  javascript:
+    - library-health.js
+
+tasks:
+  - name: Quick Library Health Check
+    description: Logs a quick summary of potential quality issues (missing covers, missing dates, unorganized scenes, etc.)
+    defaultArgs: {}

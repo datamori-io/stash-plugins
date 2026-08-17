@@ -1,0 +1,24 @@
+name: Modern Scene Cards
+description: Clean modern scene cards inspired by ThePornDB. 16:9 thumbs, female-only performers, resolution + codec badges, soft modern design with settings.
+version: 0.2.0
+url: https://github.com/datamori-io/stash-plugins
+
+ui:
+  css:
+    - modern-scene-cards.css
+  javascript:
+    - modern-scene-cards.js
+
+settings:
+  showOnlyFemale:
+    displayName: Show only female performers on cards
+    type: BOOLEAN
+  showCodec:
+    displayName: Show codec badge
+    type: BOOLEAN
+  showResolution:
+    displayName: Show resolution badge
+    type: BOOLEAN
+  showFemaleCountBadge:
+    displayName: Show female performer count / name badge
+    type: BOOLEAN
