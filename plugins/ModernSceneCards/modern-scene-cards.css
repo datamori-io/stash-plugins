@@ -1,118 +1,228 @@
 /* ============================================================
-   Modern Scene Cards v0.2 – TPDB-inspired clean design
-   16:9 feel • soft shadows • glass pills • female-first
+   Modern Scene Cards v0.3.1 – Option 1 style
+   16:9 • high-contrast res/codec badges • clean meta block
    ============================================================ */
 
 :root {
-  --msc-radius: 12px;
-  --msc-shadow: 0 8px 24px rgba(0, 0, 0, 0.38);
-  --msc-shadow-hover: 0 16px 36px rgba(0, 0, 0, 0.5);
-  --msc-glass: rgba(12, 12, 16, 0.78);
-  --msc-glass-border: rgba(255, 255, 255, 0.09);
-  --msc-accent: #e91e63;
-  --msc-res-bg: rgba(33, 150, 243, 0.88);
-  --msc-codec-bg: rgba(76, 175, 80, 0.88);
-  --msc-female-bg: rgba(233, 30, 99, 0.88);
-  --msc-text: #f5f5f7;
-  --msc-muted: rgba(255, 255, 255, 0.68);
+  --msc-radius: 10px;
+  --msc-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  --msc-shadow-hover: 0 14px 32px rgba(0, 0, 0, 0.55);
+  --msc-text: #f2f2f4;
+  --msc-muted: rgba(255, 255, 255, 0.62);
+  --msc-res: #1e88e5;
+  --msc-codec: #43a047;
+  --msc-badge-text: #ffffff;
 }
 
+/* ---- Card shell ---- */
 .scene-card {
   border-radius: var(--msc-radius) !important;
   overflow: hidden !important;
   box-shadow: var(--msc-shadow) !important;
-  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
-              box-shadow 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
-  background: #0f0f12 !important;
-  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+  background: #121216 !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
 .scene-card:hover {
-  transform: translateY(-5px) scale(1.018) !important;
+  transform: translateY(-4px) scale(1.015) !important;
   box-shadow: var(--msc-shadow-hover) !important;
-  z-index: 5;
+  z-index: 6;
 }
 
+/* ---- 16:9 thumbnail ---- */
 .scene-card .scene-card-preview,
 .scene-card .scene-card-preview-image,
 .scene-card img.scene-card-preview-image,
-.scene-card .scene-card-preview video {
+.scene-card .scene-card-preview video,
+.scene-card .preview-image-container {
   aspect-ratio: 16 / 9 !important;
   object-fit: cover !important;
   width: 100% !important;
   border-radius: 0 !important;
 }
 
-.scene-card .card-section,
-.scene-card .scene-card__details {
-  padding: 0.7rem 0.85rem 0.85rem !important;
-  background: linear-gradient(to top, #0a0a0d 0%, #141418 100%) !important;
+/* ---- High-contrast resolution / specs overlay (native Stash) ---- */
+.scene-card .scene-specs-overlay,
+.scene-card .overlay-resolution,
+.scene-card .scene-card-preview .resolution,
+.scene-card [class*="resolution"],
+.scene-card .scene-card-preview .scene-specs-overlay {
+  background: rgba(0, 0, 0, 0.82) !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  font-size: 0.7rem !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  padding: 0.22rem 0.55rem !important;
+  border-radius: 6px !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  text-shadow: none !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  opacity: 1 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
 }
 
-.scene-card .scene-card-title,
-.scene-card .card-section-title {
+/* Prefer top-right placement like option 1 */
+.scene-card .scene-specs-overlay {
+  top: 8px !important;
+  right: 8px !important;
+  left: auto !important;
+  bottom: auto !important;
+}
+
+/* Duration chip next to specs when present */
+.scene-card .scene-card-preview .duration,
+.scene-card .overlay-duration {
+  background: rgba(0, 0, 0, 0.82) !important;
+  color: #fff !important;
+  font-weight: 650 !important;
+  font-size: 0.68rem !important;
+  padding: 0.2rem 0.5rem !important;
+  border-radius: 6px !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  opacity: 1 !important;
+}
+
+/* Studio overlay – keep readable but secondary */
+.scene-card .scene-studio-overlay {
+  background: rgba(0, 0, 0, 0.65) !important;
+  color: #fff !important;
   font-weight: 600 !important;
-  font-size: 0.93rem !important;
-  letter-spacing: -0.015em !important;
-  color: var(--msc-text) !important;
-  margin-bottom: 0.3rem !important;
-  line-height: 1.3 !important;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  font-size: 0.68rem !important;
+  padding: 0.18rem 0.45rem !important;
+  border-radius: 5px !important;
+  opacity: 0.95 !important;
+  text-shadow: none !important;
 }
 
-.scene-card .scene-card__details .performer-name,
-.scene-card .scene-performers,
-.scene-card .card-section .performer-tag {
-  font-size: 0.8rem !important;
-  color: var(--msc-muted) !important;
+/* ---- Tag pills: make resolution & codec jump out ---- */
+/* Matches common Auto Quality Tags names */
+.scene-card .tag-item,
+.scene-card .scene-card__details .badge,
+.scene-card .card-section .badge,
+.scene-card a.tag-item {
+  border-radius: 999px !important;
+  font-weight: 650 !important;
+  font-size: 0.68rem !important;
+  letter-spacing: 0.02em !important;
 }
 
-.scene-card .performer-name[data-gender="MALE"],
-.scene-card .performer-name[data-gender="TRANSGENDER_MALE"],
-.scene-card .performer-tag[data-gender="MALE"] {
-  display: none !important;
+/* Resolution-style tags */
+.scene-card .tag-item[href*="4K" i],
+.scene-card .tag-item[href*="2160" i],
+.scene-card .tag-item[href*="1440" i],
+.scene-card .tag-item[href*="1080" i],
+.scene-card .tag-item[href*="720" i],
+.scene-card .badge:is([title*="4K" i], [title*="1080" i], [title*="720" i]),
+.scene-card span.tag-item:is([data-tag-name*="4K" i], [data-tag-name*="1080" i]) {
+  background: var(--msc-res) !important;
+  color: var(--msc-badge-text) !important;
+  border: none !important;
+  box-shadow: 0 1px 4px rgba(30, 136, 229, 0.45) !important;
 }
 
+/* Codec-style tags */
+.scene-card .tag-item[href*="HEVC" i],
+.scene-card .tag-item[href*="H.264" i],
+.scene-card .tag-item[href*="H264" i],
+.scene-card .tag-item[href*="AV1" i],
+.scene-card .tag-item[href*="VP9" i],
+.scene-card .tag-item[href*="x265" i],
+.scene-card .tag-item[href*="x264" i] {
+  background: var(--msc-codec) !important;
+  color: var(--msc-badge-text) !important;
+  border: none !important;
+  box-shadow: 0 1px 4px rgba(67, 160, 71, 0.45) !important;
+}
+
+/* Fallback: any tag text that looks like res/codec via attribute selectors
+   (Stash often puts the name in the link text; stronger rules above cover most cases) */
+
+/* Our own injected badge class (if re-enabled later) */
 .msc-badge-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.3rem;
-  margin-top: 0.4rem;
+  gap: 0.35rem;
+  margin-top: 0.45rem;
   align-items: center;
 }
 
 .msc-badge {
   display: inline-flex;
   align-items: center;
-  padding: 0.16rem 0.5rem;
+  padding: 0.2rem 0.55rem;
   border-radius: 999px;
-  font-size: 0.65rem;
-  font-weight: 650;
-  letter-spacing: 0.03em;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: #fff;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid var(--msc-glass-border);
   line-height: 1.25;
   white-space: nowrap;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
 }
 
-.msc-badge--resolution { background: var(--msc-res-bg); }
-.msc-badge--codec { background: var(--msc-codec-bg); }
-.msc-badge--female { background: var(--msc-female-bg); }
+.msc-badge--resolution {
+  background: var(--msc-res) !important;
+}
 
-.scene-card .scene-specs-overlay,
-.scene-card .scene-studio-overlay {
-  opacity: 0.82 !important;
+.msc-badge--codec {
+  background: var(--msc-codec) !important;
+}
+
+.msc-badge--female {
+  background: #d81b60 !important;
+}
+
+/* ---- Details block (option 1 style) ---- */
+.scene-card .card-section,
+.scene-card .scene-card__details {
+  padding: 0.65rem 0.8rem 0.8rem !important;
+  background: #121216 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.scene-card .scene-card-title,
+.scene-card .card-section-title,
+.scene-card .scene-card__title {
   font-weight: 600 !important;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85) !important;
-  backdrop-filter: blur(4px);
+  font-size: 0.9rem !important;
+  letter-spacing: -0.01em !important;
+  color: var(--msc-text) !important;
+  margin-bottom: 0.25rem !important;
+  line-height: 1.35 !important;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
+.scene-card .scene-card__date,
+.scene-card .card-section .text-muted,
+.scene-card .scene-card-date {
+  font-size: 0.75rem !important;
+  color: var(--msc-muted) !important;
+}
+
+.scene-card .performer-name,
+.scene-card .scene-performers,
+.scene-card .performer-tag {
+  font-size: 0.78rem !important;
+  color: var(--msc-muted) !important;
+}
+
+/* Rating banner */
 .scene-card .rating-banner {
   border-radius: 0 0 8px 0 !important;
+  font-weight: 700 !important;
+}
+
+/* Selection check / actions – keep clear */
+.scene-card .card-check,
+.scene-card .scene-card-check {
+  opacity: 1 !important;
 }

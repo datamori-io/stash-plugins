@@ -1,6 +1,6 @@
 name: Modern Scene Cards
-description: Clean modern scene cards inspired by ThePornDB. 16:9 thumbs, soft shadows, rounded corners. Pure CSS + MutationObserver (no React patching).
-version: 0.3.0
+description: Clean modern scene cards (option-1 style). 16:9 thumbs, high-contrast resolution/codec badges, soft shadows. Pure CSS + MutationObserver.
+version: 0.3.1
 url: https://github.com/datamori-io/stash-plugins
 
 ui:
