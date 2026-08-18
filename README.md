@@ -2,7 +2,7 @@
 
 Personal Stash plugin source for a high-quality adult media library.
 
-## Source URL (once published)
+## Source URL
 
 ```
 https://datamori-io.github.io/stash-plugins/main/index.yml
@@ -31,6 +31,15 @@ Run the task from **Tasks** page → “Apply Resolution & Codec Tags”.
 
 ### 3. Library Health (starter)
 Light visual indicators for missing dates / quality issues.
+
+### 4. RenameRelocate (v1.0.0)
+Rename a scene from the Title field, append a suffix tag, and move the file to another folder.
+
+- **Apply To Folder** — only process files under this path
+- **Destination Folder** — relocate after rename
+- **Filename Suffix Tag** — variable appended to the end of the filename
+
+Requires Python packages: `stashapp-tools`, `requests`, `psutil`.
 
 ## License
 
