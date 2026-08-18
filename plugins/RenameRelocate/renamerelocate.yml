@@ -1,6 +1,6 @@
 name: RenameRelocate
 description: Renames a scene file from the Title field, optionally appends a suffix tag, and moves it to a destination folder. Only runs for files under the designated source folder.
-version: 1.0.0
+version: 1.0.1
 url: https://discourse.stashapp.cc/t/renamefile/1334
 ui:
   css:
@@ -10,15 +10,15 @@ ui:
 settings:
   applyToFolder:
     displayName: Apply To Folder
-    description: Only process scenes whose file path is under this folder. Leave empty to apply to all scenes. Example: /media/stash/inbox
+    description: "Only process scenes whose file path is under this folder. Leave empty to apply to all scenes. Example: /media/stash/inbox"
     type: STRING
   destinationFolder:
     displayName: Destination Folder
-    description: After renaming, move the file (and associated files) into this folder. Leave empty to keep the file in its current folder. Example: /media/stash/organized
+    description: "After renaming, move the file (and associated files) into this folder. Leave empty to keep the file in its current folder. Example: /media/stash/organized"
     type: STRING
   filenameSuffix:
     displayName: Filename Suffix Tag
-    description: Variable appended to the end of the new filename (before the extension). Example: [Keep] or _reviewed. Leave empty for no extra suffix.
+    description: "Variable appended to the end of the new filename (before the extension). Example: [Keep] or _reviewed. Leave empty for no extra suffix."
     type: STRING
   yRenameEvenIfTitleEmpty:
     displayName: Empty Title Rename
@@ -30,15 +30,15 @@ settings:
     type: BOOLEAN
   zfieldKeyList:
     displayName: Key Fields
-    description: '(Default=title,performers,studio,tags) Comma-separated list in desired filename order. Example: performers,title,tags'
+    description: "(Default=title,performers,studio,tags) Comma-separated list in desired filename order. Example: performers,title,tags"
     type: STRING
   zmaximumTagKeys:
     displayName: Max Tag Keys
-    description: (Default=12) Maximum quantity of tag keys to append to file name. 0=Default(12); -1=No tags appended.
+    description: "(Default=12) Maximum quantity of tag keys to append to file name. 0=Default(12); -1=No tags appended."
     type: NUMBER
   zseparators:
     displayName: Separator
-    description: '(Default=-) Separator between filename parts.'
+    description: "(Default=-) Separator between filename parts."
     type: STRING
   zzdebugTracing:
     displayName: Debug Tracing
