@@ -1,6 +1,6 @@
 name: Modern Scene Cards
-description: Orange/dark-grey modern cards. Studio top-right; clean resolution, codec & time chips bottom-right. Hover performer for up to 3 other scenes.
-version: 0.4.1
+description: Orange/dark-grey modern cards. Studio top-right; res/codec/time bottom-right; optional Watched badge when play progress is over 25% of duration.
+version: 0.5.0
 url: https://github.com/datamori-io/stash-plugins
 
 ui:
@@ -8,3 +8,8 @@ ui:
     - modern-scene-cards.css
   javascript:
     - modern-scene-cards.js
+
+settings:
+  showWatchedBadge:
+    displayName: Show Watched badge (play progress over 25%)
+    type: BOOLEAN

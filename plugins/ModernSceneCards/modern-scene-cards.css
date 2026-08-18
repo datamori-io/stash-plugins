@@ -1,6 +1,6 @@
 /* ============================================================
-   Modern Scene Cards v0.4.1
-   Orange / dark-grey • clean bottom chips only
+   Modern Scene Cards v0.5.0
+   Orange / dark-grey • clean chips • watched badge
    ============================================================ */
 
 :root {
@@ -74,7 +74,6 @@
   object-fit: contain !important;
 }
 
-/* When we own bottom meta, hide native jumbled overlays */
 .scene-card.msc-has-bottom-meta .scene-specs-overlay,
 .scene-card.msc-has-bottom-meta .overlay-resolution,
 .scene-card.msc-has-bottom-meta .overlay-duration,
@@ -82,7 +81,6 @@
   display: none !important;
 }
 
-/* Our chips only */
 .msc-bottom-meta {
   position: absolute !important;
   bottom: 8px !important;
@@ -127,7 +125,32 @@
   font-weight: 650 !important;
 }
 
-/* Tag pills for quality tags */
+/* Watched — top left, away from studio */
+.msc-watched {
+  position: absolute !important;
+  top: 8px !important;
+  left: 8px !important;
+  z-index: 5 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #fff;
+  background: rgba(46, 125, 50, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+
+.scene-card.msc-watched-card {
+  border-color: rgba(76, 175, 80, 0.28) !important;
+}
+
 .scene-card .tag-item[href*="4K" i],
 .scene-card .tag-item[href*="1080" i],
 .scene-card .tag-item[href*="720" i],
