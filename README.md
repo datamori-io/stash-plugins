@@ -51,8 +51,15 @@ Light visual indicators for missing dates / quality issues.
 | --- | --- |
 | Quick Library Health Check | Logs a summary of potential quality issues (missing covers, missing dates, unorganized scenes, etc.) |
 
-### 4. RenameRelocate (v1.0.2)
-Renames a scene file from the Title field, optionally appends a suffix tag, and moves it to a destination folder. Runs on `Scene.Update.Post`, or manually via the **Rename Relocate Last Scene** task.
+### 4. RenameRelocate (v1.1.0)
+Renames a scene file from the Title field, optionally appends a suffix tag, and moves it to a destination folder. Runs on `Scene.Update.Post`, or manually via a task.
+
+**Tasks**
+
+| Task | What it does |
+| --- | --- |
+| Rename Relocate Last Scene | Processes the most recently updated scene. |
+| Rename Relocate Whole Library | Pages through every scene and applies the same rules. Off by default — refuses to run until **Enable Whole Library Task** is on. |
 
 **Settings**
 
@@ -69,6 +76,7 @@ Renames a scene file from the Title field, optionally appends a suffix tag, and 
 | Separator | String | Separator between filename parts. Default `-`. |
 | Debug Tracing | Boolean | Extra logging to `RenameRelocate/renamerelocate.log`. |
 | Dry Run | Boolean | Log what would happen without renaming or moving. **Enable this first after changing settings.** |
+| Enable Whole Library Task | Boolean | Safety switch. While off, the whole-library task does nothing. Off by default. |
 
 Requires Python packages: `stashapp-tools`, `requests`, `psutil`.
 

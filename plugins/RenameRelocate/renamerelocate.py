@@ -33,6 +33,12 @@ EXCLUDE_TAGS = {t.lower() for t in (ADVANCED.get("excludeTags") or [])}
 EXCLUDE_IGNORE_AUTO_TAGS = ADVANCED.get("excludeIgnoreAutoTags", True)
 RENAME_ASSOCIATED = ADVANCED.get("rename_associated_files_enable", True)
 PATH_TO_EXCLUDE = (ADVANCED.get("pathToExclude") or "").strip()
+LIBRARY_PAGE_SIZE = int(ADVANCED.get("library_task_page_size") or 100)
+
+SCENE_FIELDS = (
+    "id title date performers {name} tags {id name ignore_auto_tag} "
+    "studio {name} files {id path width height video_codec frame_rate}"
+)
 
 TRACE_ENABLED = False
 
@@ -213,16 +219,22 @@ def move_associated(old_stem, new_stem):
             log.warning(f"Failed to move associated file {src}: {e}")
 
 
-def rename_scene(stash, scene_id, settings):
-    fragment = (
-        "id title date performers {name} tags {id name ignore_auto_tag} "
-        "studio {name} files {id path width height video_codec frame_rate}"
-    )
-    scene = stash.find_scene(scene_id, fragment)
-    if not scene or not scene.get("files"):
-        log.error(f"Scene {scene_id} not found or has no files.")
-        return None
+def scan_paths(stash, paths):
+    for p in paths:
+        try:
+            stash.metadata_scan(paths=[p])
+        except Exception as e:
+            log.warning(f"metadata_scan failed for {p}: {e}")
 
+
+def process_scene(stash, scene, settings, scan=True, touched=None, verbose=True):
+    """Rename/move one already-fetched scene. Returns the new path, or None.
+
+    verbose=False keeps the "nothing to do" reasons at trace level, so a whole
+    library pass does not log a line for every untouched scene.
+    """
+    skip = log.info if verbose else trace
+    scene_id = scene.get("id")
     original = scene["files"][0]["path"]
     apply_to = (settings.get("applyToFolder") or "").strip()
     rename_only = bool(settings.get("renameOnly"))
@@ -232,7 +244,7 @@ def rename_scene(stash, scene_id, settings):
 
     if rename_only:
         if dest_setting:
-            log.info("Rename Only is enabled — ignoring Destination Folder; the file stays where it is.")
+            skip("Rename Only is enabled — ignoring Destination Folder; the file stays where it is.")
         dest_folder = ""
     else:
         dest_folder = dest_setting
@@ -240,15 +252,15 @@ def rename_scene(stash, scene_id, settings):
     trace(f"scene={scene_id} file={original} rename_only={rename_only} dest={dest_folder!r} dry_run={dry_run}")
 
     if apply_to and not path_is_under(original, apply_to):
-        log.info(f"Skipping scene {scene_id}: not under Apply To Folder ({apply_to})")
+        skip(f"Skipping scene {scene_id}: not under Apply To Folder ({apply_to})")
         return None
 
     if PATH_TO_EXCLUDE and path_is_under(original, PATH_TO_EXCLUDE):
-        log.info(f"Skipping scene {scene_id}: under pathToExclude ({PATH_TO_EXCLUDE})")
+        skip(f"Skipping scene {scene_id}: under pathToExclude ({PATH_TO_EXCLUDE})")
         return None
 
     if not scene.get("title") and not rename_if_empty:
-        log.info("Nothing to do because title is empty.")
+        skip(f"Skipping scene {scene_id}: title is empty.")
         return None
 
     if not os.path.isfile(original):
@@ -266,7 +278,7 @@ def rename_scene(stash, scene_id, settings):
     dest_dir = Path(normalize_path(dest_folder)) if dest_folder else src_dir
     same_dir = normalize_path(src_dir) == normalize_path(dest_dir)
     if same_dir and new_stem == stem:
-        log.info(f"Name unchanged: {original}")
+        skip(f"Name unchanged: {original}")
         return None
 
     if not dry_run:
@@ -283,7 +295,7 @@ def rename_scene(stash, scene_id, settings):
         return None
 
     if normalize_path(new_path) == normalize_path(original):
-        log.info(f"Name and folder unchanged: {original}")
+        skip(f"Name and folder unchanged: {original}")
         return None
 
     verb = "rename" if same_dir else "move"
@@ -302,17 +314,93 @@ def rename_scene(stash, scene_id, settings):
 
     move_associated(str(src_dir / stem), str(dest_dir / new_path.stem))
 
-    scan_paths = [src_dir.resolve().as_posix()]
+    dirs = [src_dir.resolve().as_posix()]
     dest_posix = dest_dir.resolve().as_posix()
-    if dest_posix not in scan_paths:
-        scan_paths.append(dest_posix)
-    for p in scan_paths:
-        try:
-            stash.metadata_scan(paths=[p])
-        except Exception as e:
-            log.warning(f"metadata_scan failed for {p}: {e}")
-    time.sleep(2)
+    if dest_posix not in dirs:
+        dirs.append(dest_posix)
+    if touched is not None:
+        touched.update(dirs)
+    if scan:
+        scan_paths(stash, dirs)
+        time.sleep(2)
     return str(new_path)
+
+
+def rename_scene(stash, scene_id, settings, scan=True, touched=None, verbose=True):
+    scene = stash.find_scene(scene_id, SCENE_FIELDS)
+    if not scene or not scene.get("files"):
+        log.error(f"Scene {scene_id} not found or has no files.")
+        return None
+    return process_scene(stash, scene, settings, scan=scan, touched=touched, verbose=verbose)
+
+
+def scene_page(stash, page, per_page):
+    query = """
+        query($page: Int!, $per_page: Int!) {
+          findScenes(filter: {page: $page, per_page: $per_page, sort: "id", direction: ASC}) {
+            count
+            scenes { %s }
+          }
+        }
+    """ % SCENE_FIELDS
+    result = stash.call_GQL(query, {"page": page, "per_page": per_page}) or {}
+    found = result.get("findScenes") or {}
+    return found.get("count") or 0, found.get("scenes") or []
+
+
+def rename_library(stash, settings):
+    """Whole-library pass. Gated behind the Enable Whole Library Task setting."""
+    if not settings.get("zzenableLibraryTask"):
+        log.error(
+            "Whole Library Rename is off. Turn on 'Enable Whole Library Task' in "
+            "Settings -> Plugins -> RenameRelocate to run it (do a Dry Run first)."
+        )
+        return
+
+    dry_run = bool(settings.get("zzdryRun"))
+    log.info(f"Whole Library Rename starting{' (Dry Run)' if dry_run else ''}.")
+
+    touched = set()
+    processed = changed = failed = 0
+    total = None
+    page = 1
+    while True:
+        try:
+            count, scenes = scene_page(stash, page, LIBRARY_PAGE_SIZE)
+        except Exception as e:
+            log.error(f"Failed to fetch scene page {page}: {e}")
+            break
+        if total is None:
+            total = count
+            log.info(f"{total} scenes to check.")
+        if not scenes:
+            break
+        for scene in scenes:
+            processed += 1
+            if not scene.get("files"):
+                trace(f"Skipping scene {scene.get('id')}: no files.")
+                continue
+            try:
+                if process_scene(stash, scene, settings, scan=False, touched=touched, verbose=False):
+                    changed += 1
+            except Exception as e:
+                failed += 1
+                log.error(f"Scene {scene.get('id')} failed: {e}\n{traceback.format_exc()}")
+            if total:
+                try:
+                    log.progress(min(processed / total, 1.0))
+                except Exception:
+                    pass
+        if len(scenes) < LIBRARY_PAGE_SIZE:
+            break
+        page += 1
+
+    verb = "would be renamed" if dry_run else "renamed"
+    log.info(f"Whole Library Rename done: {processed} checked, {changed} {verb}, {failed} failed.")
+
+    if touched and not dry_run:
+        log.info(f"Scanning {len(touched)} folder(s).")
+        scan_paths(stash, sorted(touched))
 
 
 def latest_scene_id(stash):
@@ -350,6 +438,13 @@ def main():
     TRACE_ENABLED = bool(settings.get("zzdebugTracing"))
     mode = ((json_input.get("args") or {}).get("mode")) or ""
     trace(f"mode={mode!r} settings={settings}")
+
+    if mode == "rename_library_task":
+        try:
+            rename_library(stash, settings)
+        except Exception as e:
+            log.error(f"Whole Library Rename failed: {e}\n{traceback.format_exc()}")
+        return
 
     scene_id = hook_scene_id(json_input)
     if mode == "rename_files_task" or not scene_id:

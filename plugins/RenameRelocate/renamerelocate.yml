@@ -1,6 +1,6 @@
 name: RenameRelocate
 description: Renames a scene file from the Title field, optionally appends a suffix tag, and moves it to a destination folder. Only runs for files under the designated source folder.
-version: 1.0.2
+version: 1.1.0
 url: https://discourse.stashapp.cc/t/renamefile/1334
 ui:
   css:
@@ -52,6 +52,10 @@ settings:
     displayName: Dry Run
     description: Log what would happen without renaming or moving files. Enable this first after changing settings.
     type: BOOLEAN
+  zzenableLibraryTask:
+    displayName: Enable Whole Library Task
+    description: Safety switch for the "Rename Relocate Whole Library" task. While this is off the task refuses to run. Leave it off unless you are deliberately doing a library-wide pass, and run it with Dry Run first.
+    type: BOOLEAN
 exec:
   - python
   - "{pluginDir}/renamerelocate.py"
@@ -66,3 +70,7 @@ tasks:
     description: Renames and relocates the last updated scene.
     defaultArgs:
       mode: rename_files_task
+  - name: Rename Relocate Whole Library
+    description: Renames and relocates every scene in the library, honouring Apply To Folder. Does nothing unless Enable Whole Library Task is turned on. Run with Dry Run first.
+    defaultArgs:
+      mode: rename_library_task
