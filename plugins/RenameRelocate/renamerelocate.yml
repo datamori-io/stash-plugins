@@ -1,6 +1,6 @@
 name: RenameRelocate
 description: Renames a scene file from the Title field, optionally appends a suffix tag, and moves it to a destination folder. Only runs for files under the designated source folder.
-version: 1.0.1
+version: 1.0.2
 url: https://discourse.stashapp.cc/t/renamefile/1334
 ui:
   css:
@@ -14,12 +14,16 @@ settings:
     type: STRING
   destinationFolder:
     displayName: Destination Folder
-    description: "After renaming, move the file (and associated files) into this folder. Leave empty to keep the file in its current folder. Example: /media/stash/organized"
+    description: "After renaming, move the file (and associated files) into this folder. Ignored when Rename Only is enabled. Leave empty to keep the file in its current folder. Example: /media/stash/organized"
     type: STRING
   filenameSuffix:
     displayName: Filename Suffix Tag
     description: "Variable appended to the end of the new filename (before the extension). Example: [Keep] or _reviewed. Leave empty for no extra suffix."
     type: STRING
+  renameOnly:
+    displayName: Rename Only (no relocate)
+    description: If enabled, rename the file in place and never move it. Destination Folder is ignored while this is on.
+    type: BOOLEAN
   yRenameEvenIfTitleEmpty:
     displayName: Empty Title Rename
     description: If enabled, rename/move files even if TITLE field is empty.

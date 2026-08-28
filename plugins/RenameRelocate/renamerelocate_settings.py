@@ -1,7 +1,13 @@
 # RenameRelocate advanced configuration.
-# Primary options (source folder, destination folder, suffix tag) are in
-# Settings -> Plugins -> RenameRelocate.
+# Primary options (source folder, destination folder, suffix tag, rename-only)
+# are in Settings -> Plugins -> RenameRelocate.
 # After changing this file: enable Dry Run, then Reload Plugins.
+#
+# Keys read by renamerelocate.py:
+#   associated_files_to_rename, rename_associated_files_enable,
+#   max_filename_length, excludeTags, excludeIgnoreAutoTags, pathToExclude
+# The remaining keys are carried over from upstream RenameFile and are not
+# read yet; they are kept so config files stay portable between the two.
 config = {
     "wrapper_styles": {
         "title": '',
