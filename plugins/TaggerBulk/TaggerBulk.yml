@@ -1,0 +1,20 @@
+name: Tagger Bulk
+description: Adds Search All and bulk query editing to the Scene Tagger. Runs every row's Search sequentially, and find/replaces the query text across all rows at once.
+version: 0.1.0
+url: https://github.com/datamori-io/stash-plugins
+
+ui:
+  css:
+    - tagger-bulk.css
+  javascript:
+    - tagger-bulk.js
+
+settings:
+  searchDelay:
+    displayName: Delay between searches (ms)
+    description: Pause after each scene search. Raise this if your stash-box endpoint rate-limits you. Default 1000.
+    type: NUMBER
+  skipMatched:
+    displayName: Skip scenes that already have results
+    description: Search All ignores rows that already show search results. On by default.
+    type: BOOLEAN

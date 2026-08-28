@@ -80,6 +80,25 @@ Renames a scene file from the Title field, optionally appends a suffix tag, and 
 
 Requires Python packages: `stashapp-tools`, `requests`, `psutil`.
 
+### 5. Tagger Bulk (v0.1.0)
+Adds a toolbar to the Scene Tagger, next to the built-in **Scrape All**.
+
+- **Search All** — runs every row's Search button one at a time, with a pause between each. Turns into a **Stop** button while running.
+- **Selected only** — limits Search All and the bulk edit to rows you have ticked, the same way **Scrape Selected** works.
+- **Find / Replace (+ Regex)** — rewrites the query text in every row at once. Case-insensitive, all occurrences.
+- **Reset** — clears the query boxes so they fall back to the string Stash derives from the filename or metadata.
+
+Search All only appears to do anything when the selected source supports search — stash-box endpoints do, most fragment-only scrapers do not. Nothing is saved: it fills in candidate results for you to review, exactly like clicking Search yourself.
+
+**Settings**
+
+| Setting | Type | Description |
+| --- | --- | --- |
+| Delay between searches (ms) | Number | Pause after each scene search. Raise this if your stash-box endpoint rate-limits you. Default `1000`. |
+| Skip scenes that already have results | Boolean | Search All ignores rows that already show results. On by default. |
+
+For bulk changes to *how* the default query is built (rather than the text in each box), use the tagger's own config button — **Query Mode** and **Blacklist** apply to every row already.
+
 ## License
 
 AGPL-3.0
