@@ -99,6 +99,19 @@ Search All only appears to do anything when the selected source supports search 
 
 For bulk changes to *how* the default query is built (rather than the text in each box), use the tagger's own config button — **Query Mode** and **Blacklist** apply to every row already.
 
+## Scrapers
+
+These are YAML scrapers, not plugins. Copy them into Stash's **scrapers** directory and reload under **Settings → Metadata Providers**. They are not served by the plugin `index.yml`.
+
+### GameLink
+
+Scenes, groups, and performers from [gamelink.com](https://www.gamelink.com) and [gay.gamelink.com](https://gay.gamelink.com).
+
+- Path: [`scrapers/GameLink/GameLink.yml`](scrapers/GameLink/GameLink.yml)
+- Notes: [`scrapers/GameLink/README.md`](scrapers/GameLink/README.md)
+
+Paste a movie URL such as `https://www.gamelink.com/adult-movies/{studio}/{id}/{slug}` and scrape. Age-gate cookie is bundled.
+
 ## License
 
 AGPL-3.0

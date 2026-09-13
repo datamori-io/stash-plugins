@@ -1,0 +1,219 @@
+# GameLink.com Stash scraper
+# Sister site of AdultEmpire / AdultDVDEmpire (Ravana / ADE).
+# Paste a movie or clip URL into the scene/group URL field and scrape.
+#
+# Movie URL example:
+#   https://www.gamelink.com/adult-movies/vivid/1405521/young-nikki-tyler
+#   https://gay.gamelink.com/adult-movies/colt-studio/2908505/hawaii
+# Clip URL example (Empire-style, when present):
+#   https://www.gamelink.com/clip/...
+# Performer URL example:
+#   https://www.gamelink.com/porn-stars/676006/porn-star
+#
+# Age-gate cookie is required. If scrape returns empty fields,
+# confirm ageConfirmed is being sent (see driver.cookies below).
+
+name: GameLink
+
+sceneByURL:
+  - action: scrapeXPath
+    url:
+      - gamelink.com/clip
+      - gay.gamelink.com/clip
+    scraper: sceneScraperClip
+  - action: scrapeXPath
+    url:
+      - gamelink.com/adult-movies
+      - gay.gamelink.com/adult-movies
+      - gamelink.com
+      - gay.gamelink.com
+    scraper: sceneScraperMovie
+
+groupByURL:
+  - action: scrapeXPath
+    url:
+      - gamelink.com/adult-movies
+      - gay.gamelink.com/adult-movies
+      - gamelink.com
+      - gay.gamelink.com
+    scraper: movieScraper
+
+performerByURL:
+  - action: scrapeXPath
+    url:
+      - gamelink.com/porn-stars
+      - gay.gamelink.com/porn-stars
+    scraper: performerScraper
+
+sceneByName:
+  action: scrapeXPath
+  queryURL: https://www.gamelink.com/search?q={}
+  scraper: sceneSearch
+
+sceneByQueryFragment:
+  action: scrapeXPath
+  queryURL: "{url}"
+  scraper: sceneScraperMovie
+
+xPathScrapers:
+  sceneSearch:
+    scene:
+      Title:
+        selector: //a[contains(@href, "/adult-movies/")]//img/@alt | //a[contains(@href, "/adult-movies/")]//h3 | //a[contains(@href, "/adult-movies/")]
+      URL:
+        selector: //a[contains(@href, "/adult-movies/")]/@href
+        postProcess:
+          - replace:
+              - regex: ^//
+                with: "https://"
+              - regex: ^/
+                with: "https://www.gamelink.com/"
+      Image: //a[contains(@href, "/adult-movies/")]//img/@src
+
+  movieScraper:
+    group:
+      Name: &title
+        selector: //h1/text() | //meta[@property="og:title"]/@content
+        postProcess:
+          - replace:
+              - regex: \s+\|\s+.*$
+                with: ""
+      Director:
+        selector: //*[contains(normalize-space(.), "Director")]/following::a[1] | //li[contains(., "Director")]//a | //strong[contains(., "Director")]/following-sibling::text() | //*[contains(text(), "Director:")]/following-sibling::*
+      Duration:
+        selector: //*[contains(., "Running Time")]/following-sibling::text() | //li[contains(., "Running Time")] | //*[contains(text(), "Running Time:")]
+        postProcess:
+          - replace:
+              - regex: ".*Running Time:\\s*"
+                with: ""
+              - regex: " hrs\\. "
+                with: ":"
+              - regex: " mins\\."
+                with: ":00"
+      Date: &date
+        selector: //*[contains(., "Released:")] | //li[contains(., "Released")] | //*[contains(text(), "Released")]
+        postProcess:
+          - replace:
+              - regex: ".*Released:\\s*"
+                with: ""
+              - regex: "^\\s+|\\s+$"
+                with: ""
+          - parseDate: Jan 02 2006
+      Synopsis: &details
+        selector: //meta[@property="og:description"]/@content | //div[contains(@class, "synopsis")] | //p[preceding-sibling::h1][1]
+      Studio: &studio
+        Name:
+          selector: //*[contains(., "Studio")]/following-sibling::a[1] | //li[contains(., "Studio")]//a | //small[contains(., "Studio")]/following-sibling::a | //a[contains(@href, "/studios/")]
+      FrontImage: &image
+        selector: //meta[@property="og:image"]/@content | //a[@id="front-cover"]/@href | //a[@id="front-cover"]/@data-href | //img[contains(@class, "cover") or contains(@alt, "cover")]/@src
+      URLs: //link[@rel="canonical"]/@href | //meta[@property="og:url"]/@content
+      Tags: &tags
+        Name: //*[contains(., "Categories")]/following-sibling::*//a | //a[contains(@href, "/categories/")] | //a[@label="Category"]
+
+  sceneScraperMovie:
+    scene:
+      Title: *title
+      Details: *details
+      Date: *date
+      Director:
+        selector: //*[contains(., "Director")]/following-sibling::a | //li[contains(., "Director")]//a
+      Image: *image
+      Studio: *studio
+      Groups:
+        Name: *title
+        URL: //link[@rel="canonical"]/@href | //meta[@property="og:url"]/@content
+      Tags: *tags
+      Performers:
+        Name: //*[contains(., "Starring")]/following-sibling::a | //li[contains(., "Starring")]//a | //a[contains(@href, "/porn-stars/")]
+        URLs:
+          selector: //*[contains(., "Starring")]/following-sibling::a/@href | //li[contains(., "Starring")]//a/@href | //a[contains(@href, "/porn-stars/")]/@href
+          postProcess:
+            - replace:
+                - regex: ^//
+                  with: "https://"
+                - regex: ^/
+                  with: "https://www.gamelink.com/"
+      URL: //link[@rel="canonical"]/@href | //meta[@property="og:url"]/@content
+      Code:
+        selector: //link[@rel="canonical"]/@href | //meta[@property="og:url"]/@content
+        postProcess:
+          - replace:
+              - regex: ".*/adult-movies/[^/]+/(\\d+)/.*"
+                with: "$1"
+
+  sceneScraperClip:
+    scene:
+      Title: //h1 | //div[contains(@class, "clip-page")]//h1
+      Studio:
+        Name: //div[contains(text(), "by")]/a | //*[contains(., "Studio")]/following-sibling::a[1]
+      Groups:
+        Name: //div[contains(text(), "from")]/a
+      Date:
+        selector: //strong[contains(text(), "Released")]/following-sibling::text() | //*[contains(., "Released:")]
+        postProcess:
+          - replace:
+              - regex: ".*Released:\\s*"
+                with: ""
+          - parseDate: Jan 02 2006
+      Tags:
+        Name: //strong[contains(text(), "Attributes")]/following-sibling::a | //a[contains(@href, "/categories/")]
+      Performers:
+        Name: //strong[contains(text(), "Starring")]/following-sibling::a | //a[contains(@href, "/porn-stars/")]
+        URLs:
+          selector: //strong[contains(text(), "Starring")]/following-sibling::a/@href | //a[contains(@href, "/porn-stars/")]/@href
+          postProcess:
+            - replace:
+                - regex: ^/
+                  with: "https://www.gamelink.com/"
+      Image: //meta[@property="og:image"]/@content | //a[@id="front-cover"]/img/@src
+      URL: //link[@rel="canonical"]/@href
+      Details: //meta[@property="og:description"]/@content
+
+  performerScraper:
+    performer:
+      Name: //main//h1 | //h1
+      Aliases:
+        selector: //*[contains(., "Alias") or contains(., "AKA")]
+        postProcess:
+          - replace:
+              - regex: ".*(?:Alias|AKA):\\s*"
+                with: ""
+      Birthdate:
+        selector: //*[contains(., "Born:")]
+        postProcess:
+          - replace:
+              - regex: ".*Born:\\s*"
+                with: ""
+          - parseDate: January 02 2006
+      Height:
+        selector: //*[contains(., "Height:") or contains(., "inches tall")]
+        postProcess:
+          - replace:
+              - regex: ".*Height:\\s*"
+                with: ""
+          - feetToCm: true
+      Country:
+        selector: //*[contains(., "Birthplace:") or contains(., "From:")]
+        postProcess:
+          - replace:
+              - regex: ".*(?:Birthplace|From):\\s*"
+                with: ""
+      Image: //meta[@property="og:image"]/@content | //img[contains(@class, "performer") or contains(@alt, "Headshot")]/@src
+      URLs: //link[@rel="canonical"]/@href
+
+driver:
+  cookies:
+    - CookieURL: "https://www.gamelink.com"
+      Cookies:
+        - Name: "ageConfirmed"
+          Domain: ".gamelink.com"
+          Value: "true"
+          Path: "/"
+    - CookieURL: "https://gay.gamelink.com"
+      Cookies:
+        - Name: "ageConfirmed"
+          Domain: ".gamelink.com"
+          Value: "true"
+          Path: "/"
+
+# Last Updated September 13, 2026
