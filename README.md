@@ -1,14 +1,24 @@
 # datamori-io / stash-plugins
 
-Personal Stash plugin source for a high-quality adult media library.
+Personal Stash plugin and scraper source for a high-quality adult media library.
 
-## Source URL
+## Plugin source URL
 
 ```
 https://datamori-io.github.io/stash-plugins/main/index.yml
 ```
 
 Add this URL in **Stash → Settings → Plugins → Available Plugins → Add Source**.
+
+## Scraper source URL
+
+```
+https://datamori-io.github.io/stash-plugins/main/scrapers/index.yml
+```
+
+Add this URL in **Stash → Settings → Metadata Providers → Available Scrapers → Add Source**.
+
+Name it something like `datamori scrapers`. After the source appears, install **GameLink** from the list and reload scrapers.
 
 ## Included Plugins
 
@@ -101,7 +111,7 @@ For bulk changes to *how* the default query is built (rather than the text in ea
 
 ## Scrapers
 
-These are YAML scrapers, not plugins. Copy them into Stash's **scrapers** directory and reload under **Settings → Metadata Providers**. They are not served by the plugin `index.yml`.
+Served from the scraper source URL above after GitHub Pages deploys.
 
 ### GameLink
 
