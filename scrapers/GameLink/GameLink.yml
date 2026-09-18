@@ -47,7 +47,10 @@ performerByURL:
 
 sceneByName:
   action: scrapeXPath
-  queryURL: https://www.gamelink.com/search?q={}
+  # GET, not the site's own search form. /search is POST-only -- a GET to it
+  # ignores the term and returns the generic listing, which is why this used
+  # to come back with promo banners. /adult-movies/search?q= is a real GET search.
+  queryURL: https://www.gamelink.com/adult-movies/search?q={}
   scraper: sceneSearch
 
 sceneByQueryFragment:
@@ -58,17 +61,23 @@ sceneByQueryFragment:
 xPathScrapers:
   sceneSearch:
     scene:
-      Title:
-        selector: //a[contains(@href, "/adult-movies/")]//img/@alt | //a[contains(@href, "/adult-movies/")]//h3 | //a[contains(@href, "/adult-movies/")]
+      # Every result card is <div class="item-preview-video" itemid=".." itemtitle="..">.
+      # Anchoring all three on it keeps the lists the same length and the same
+      # order, which is what Stash needs to zip them into results. The old
+      # selectors matched any /adult-movies/ link and picked up the sale
+      # banners in the page chrome.
+      Title: //div[@class="item-preview-video"]/@itemtitle
       URL:
-        selector: //a[contains(@href, "/adult-movies/")]/@href
+        selector: //div[@class="item-preview-video"]/a[1]/@href
         postProcess:
           - replace:
               - regex: ^//
                 with: "https://"
               - regex: ^/
                 with: "https://www.gamelink.com/"
-      Image: //a[contains(@href, "/adult-movies/")]//img/@src
+      # The covers are lazy-loaded: src is a blank placeholder gif and the real
+      # picture is in data-src.
+      Image: //div[@class="item-preview-video"]//img[@data-src]/@data-src
 
   movieScraper:
     group:
@@ -90,8 +99,13 @@ xPathScrapers:
                 with: ":"
               - regex: " mins\\."
                 with: ":00"
+      # <li><strong>Released:</strong> Jul 18 2016 </li>
+      #
+      # Anchored on the <li> that contains the <strong>, taking its own text
+      # node. //*[contains(., "Released:")] matches every ancestor as well --
+      # html and body contain the string too -- so it returned the whole page.
       Date: &date
-        selector: //*[contains(., "Released:")] | //li[contains(., "Released")] | //*[contains(text(), "Released")]
+        selector: //li[strong[contains(text(), "Released:")]]/text()
         postProcess:
           - replace:
               - regex: ".*Released:\\s*"
@@ -103,12 +117,19 @@ xPathScrapers:
         selector: //meta[@property="og:description"]/@content | //div[contains(@class, "synopsis")] | //p[preceding-sibling::h1][1]
       Studio: &studio
         Name:
-          selector: //*[contains(., "Studio")]/following-sibling::a[1] | //li[contains(., "Studio")]//a | //small[contains(., "Studio")]/following-sibling::a | //a[contains(@href, "/studios/")]
+          # Same ancestor trap as the date: scoped to the li that holds the
+          # label, not to anything that merely contains the word.
+          selector: //li[strong[contains(text(), "Studio:")]]/a
       FrontImage: &image
         selector: //meta[@property="og:image"]/@content | //a[@id="front-cover"]/@href | //a[@id="front-cover"]/@data-href | //img[contains(@class, "cover") or contains(@alt, "cover")]/@src
       URLs: //link[@rel="canonical"]/@href | //meta[@property="og:url"]/@content
       Tags: &tags
-        Name: //*[contains(., "Categories")]/following-sibling::*//a | //a[contains(@href, "/categories/")] | //a[@label="Category"]
+        # Real categories are <a href="/adult-movies/categories/<id>/<slug>"
+        # with data-tl="category". The old selector took any href containing
+        # "/categories/", which on this site includes the main nav - so a scene
+        # came back with 89 tags, of which six were tags and the rest were
+        # "Write a Review", the cast, the studio, and the site menu.
+        Name: //a[@data-tl="category"]
 
   sceneScraperMovie:
     scene:
